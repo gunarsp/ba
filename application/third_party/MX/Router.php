@@ -45,6 +45,7 @@ class MX_Router extends CI_Router
 	
 	public function _validate_request($segments) {
 		
+		log_message('debug', "MX Router: Validate request");
 		if (count($segments) == 0) return $segments;
 		
 		/* locate module controller */
@@ -56,6 +57,7 @@ class MX_Router extends CI_Router
 		}
 		
 		/* no controller found */
+		log_message('debug', "MX Router: Validate request - no controller found");
 		show_404();
 	}
 	

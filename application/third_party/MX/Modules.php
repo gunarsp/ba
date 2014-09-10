@@ -6,6 +6,7 @@ global $CFG;
 is_array(Modules::$locations = $CFG->item('modules_locations')) OR Modules::$locations = array(
 	APPPATH.'modules_core/' => '../modules_core/',
     APPPATH.'modules_custom/' => '../modules_custom/',
+		APPPATH.'modules_custom/' => '../modules_frontpage/',
 );
 
 /* PHP5 spl_autoload */
