@@ -5,6 +5,8 @@ class Mdl_ba_Modules extends MY_Model {
     public $core_modules = array();
 
     public $custom_modules = array();
+    
+    public $frontpage_modules = array();
 
     public function __construct() {
 
@@ -26,13 +28,18 @@ class Mdl_ba_Modules extends MY_Model {
         $this->core_modules = array();
 
         $this->custom_modules = array();
+        
+        $this->frontpage_modules = array();
 
         /* Refresh database core module records */
         $this->refresh_core();
 
         /* Refresh database custom module records */
         $this->refresh_custom();
-
+        
+        /* Refresh database custom module records */
+        $this->refresh_frontpage();
+        
         /* Refresh module variables */
         $this->set_module_data();
 
@@ -319,7 +326,79 @@ class Mdl_ba_Modules extends MY_Model {
         return $module_upgrade_notice;
 
     }
-
+    
+    /* Refresh database frontpage module records */
+    private function refresh_frontpage() {
+    
+    	$this->load->helper('directory');
+    	$module_path = 'modules_frontpage';
+    	
+    	/* Gather list of directories inside modules_core */
+    	$frontpage_modules = directory_map(APPPATH . $module_path . '/', TRUE);
+    
+    	foreach ($frontpage_modules as $frontpage_module) {
+    
+    		/* Use $where_not_in to delete orphaned module records in db */
+    		$where_not_in[] = $frontpage_module;
+    
+    		/* This should be the location of the module's config file */
+    		$config_file = APPPATH . $module_path . '/' . $frontpage_module . '/config/config.php';
+    
+    		/* If the config file exists, insert or update the db record */
+    		if (file_exists($config_file)) {
+    
+    			include($config_file);
+    
+    			/*
+    			 * Core module config required:
+    			*		module_path		string
+    			*		module_config	array
+    			*/
+    
+    			$db_array = array(
+    					'module_name'	=>	$config['module_name'],
+    					'module_path'	=>	$config['module_path'],
+    					'module_core'	=>	1,
+    					'module_config'	=>	serialize($config['module_config'])
+    			);
+    
+    			$db_array['module_order'] = (isset($config['module_order'])) ? $config['module_order'] : 99;
+    
+    			$this->db->where('module_path', $config['module_path']);
+    
+    			$query = $this->db->get('ba_modules');
+    
+    			if ($query->num_rows()) {
+    
+    				$this->db->where('module_path', $config['module_path']);
+    
+    				$this->db->update('ba_modules', $db_array);
+    
+    			}
+    
+    			else {
+    
+    				$this->db->insert('ba_modules', $db_array);
+    
+    			}
+    
+    		}
+    
+    	}
+    
+    	/* Delete any orphaned core module records from database */
+    	if (isset($where_not_in)) {
+    
+    		$this->db->where_not_in('module_path', $where_not_in);
+    
+    		$this->db->where('module_core', 0);
+    
+    		$this->db->delete('ba_modules');
+    
+    	}
+    
+    }
+    
 }
 
 ?>
