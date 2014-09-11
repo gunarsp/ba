@@ -1,6 +1,6 @@
 <?php (defined('BASEPATH')) OR exit('No direct script access allowed');
 
-class Frontpage extends Admin_Controller {
+class Frontpage extends Frontpage_Controller {
 
 	function __construct() {
 
